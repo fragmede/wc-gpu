@@ -1,0 +1,78 @@
+#!/usr/bin/env python3
+
+import sys
+import numpy as np
+from numba import cuda
+import argparse
+
+# Step 1: Define the CUDA kernel
+@cuda.jit
+def count_lwc_kernel(data, line_count, word_count, char_count):
+    idx = cuda.grid(1)
+    if idx < data.size:
+        # Count characters
+        cuda.atomic.add(char_count, 0, 1)
+        # Count lines
+        if data[idx] == 10:  # ASCII for newline
+            cuda.atomic.add(line_count, 0, 1)
+        # Count words
+        if idx < data.size - 1:
+            if data[idx] not in [32, 9, 10] and data[idx + 1] in [32, 9, 10]:
+                cuda.atomic.add(word_count, 0, 1)
+        if idx == data.size - 1 and data[idx] not in [32, 9, 10]:
+            cuda.atomic.add(word_count, 0, 1)
+
+# Step 2: Load data from stdin or file
+def load_data(filename=None):
+    if filename:
+        with open(filename, 'rb') as f:
+            data = np.frombuffer(f.read(), dtype=np.uint8)
+    else:
+        input_data = sys.stdin.read()
+        data = np.frombuffer(input_data.encode('utf-8'), dtype=np.uint8)
+    return data
+
+# Step 3: Allocate memory on GPU and copy data
+def count_lwc(data, count_lines, count_words, count_chars):
+    line_count = np.zeros(1, dtype=np.int32)
+    word_count = np.zeros(1, dtype=np.int32)
+    char_count = np.zeros(1, dtype=np.int32)
+
+    d_data = cuda.to_device(data)
+    d_line_count = cuda.to_device(line_count)
+    d_word_count = cuda.to_device(word_count)
+    d_char_count = cuda.to_device(char_count)
+
+    # Step 4: Define the grid and block dimensions
+    threads_per_block = 256
+    blocks_per_grid = (data.size + (threads_per_block - 1)) // threads_per_block
+
+    # Launch the kernel
+    count_lwc_kernel[blocks_per_grid, threads_per_block](d_data, d_line_count, d_word_count, d_char_count)
+
+    # Step 5: Copy the results back to host
+    line_count = d_line_count.copy_to_host()
+    word_count = d_word_count.copy_to_host()
+    char_count = d_char_count.copy_to_host()
+
+    results = []
+    if count_lines:
+        results.append(f"Lines: {line_count[0]}")
+    if count_words:
+        results.append(f"Words: {word_count[0]}")
+    if count_chars:
+        results.append(f"Characters: {char_count[0]}")
+
+    print(", ".join(results))
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Count lines, words, and characters from stdin or a file.")
+    parser.add_argument('-l', '--lines', action='store_true', help='Count lines')
+    parser.add_argument('-w', '--words', action='store_true', help='Count words')
+    parser.add_argument('-c', '--characters', action='store_true', help='Count characters')
+    parser.add_argument('filename', nargs='?', help='Input file name')
+
+    args = parser.parse_args()
+
+    data = load_data(args.filename)
+    count_lwc(data, args.lines, args.words, args.characters)
