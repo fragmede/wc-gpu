@@ -55,7 +55,7 @@ def count_lwc(data):
     word_count = d_word_count.copy_to_host()
     char_count = d_char_count.copy_to_host()
 
-    return line_count[0], word_count[0], char_count[0]
+    return line_count[0]+1, word_count[0], char_count[0]+1
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Count lines, words, and characters from stdin or files.")
