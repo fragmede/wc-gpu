@@ -88,10 +88,10 @@ if __name__ == "__main__":
             line_count, word_count, char_count = count_lwc(data)
             results = []
             if args.lines:
-                results.append(str(line_count))
+                results.append(f"{line_count:8}")
             if args.words:
-                results.append(str(word_count))
+                results.append(f"{word_count:8}")
             if args.characters:
-                results.append(str(char_count))
+                results.append(f"{char_count:8}")
             results.append(filename)
             print(" ".join(results))
