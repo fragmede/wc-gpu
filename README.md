@@ -10,11 +10,12 @@ what would be excessive and unecessary and stupid, but might be faster? Running
 wc on a GPU. So here we are.
 
 ## The code
-I'll be honest, ChatGPT wrote this thing. I don't know how to Cuda. I could
-eventually figure it out but we live in the future.
+ChatGPT wrote the core Cuda kernels, and some other parts as well, but it has
+its limitations. I've been programming for decades but my career hasn't needed
+me to do GPU programming before, so this was a fun way to get my feet wet.
 
-I don't currently have an Nvidia card of my own to test this out on, so I used
-a T4 on Google Colab to get it working.
+I don't even currently have an Nvidia card of my own to test this out on, so I
+used a T4 on Google Colab to prove it works.
 
 ## The benchmark
 
@@ -39,4 +40,3 @@ The Cuda accelerated kernel is faster than wc2's times:
 
 However, invoking the python interpreter slows us down here. I don't think I'm
 going to write a wc-gpu.cpp, so this is as far as we're going to go.
-
