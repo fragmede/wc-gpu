@@ -1,6 +1,5 @@
 # wc-gpu
-
-GPU accelerated unix util `wc`.
+A GPU accelerated version of the Unix util `wc`
 
 ## Why?
 I got [nerdsniped](https://xkcd.com/356/) by
@@ -21,7 +20,8 @@ used a T4 on Google Colab to prove it works.
 
 After [embarrasing myself](https://github.com/robertdavidgraham/wc2/issues/10)
 because I can't read, I generated a set of test files, and got the following
-results with timeit in Python on Colab.
+results with timeit in [Python on
+Colab](https://github.com/fragmede/wc-gpu/blob/main/wc_gpu.ipynb).
 
 | Input File    | Time                        |
 |---------------|-----------------------------|
@@ -31,12 +31,11 @@ results with timeit in Python on Colab.
 |utf8.txt       | 0.17958779099990352 seconds |
 |word.txt       | 0.17560361200003172 seconds |
 
-The Cuda accelerated kernel is faster than wc2's times:
+The Cuda accelerated kernel is thus faster than wc2's times:
 
 | Program | Input File   | macOS | Linux |
 |---------|--------------|------:|------:|
 | wc2.c   | (all)        |0.206  | 0.278 |
 | wc2.js  | (all)        |0.281  | 0.488 |
 
-However, invoking the python interpreter slows us down here. I don't think I'm
-going to write a wc-gpu.cpp, so this is as far as we're going to go.
+Haven't tested the overhead from running this at the command line.
