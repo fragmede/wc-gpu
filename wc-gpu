@@ -33,7 +33,7 @@ def load_data(filename=None):
     return data
 
 # Step 3: Allocate memory on GPU and copy data
-def count_lwc(data, count_lines, count_words, count_chars):
+def count_lwc(data):
     line_count = np.zeros(1, dtype=np.int32)
     word_count = np.zeros(1, dtype=np.int32)
     char_count = np.zeros(1, dtype=np.int32)
@@ -55,24 +55,38 @@ def count_lwc(data, count_lines, count_words, count_chars):
     word_count = d_word_count.copy_to_host()
     char_count = d_char_count.copy_to_host()
 
-    results = []
-    if count_lines:
-        results.append(f"Lines: {line_count[0]}")
-    if count_words:
-        results.append(f"Words: {word_count[0]}")
-    if count_chars:
-        results.append(f"Characters: {char_count[0]}")
-
-    print(", ".join(results))
+    return line_count[0], word_count[0], char_count[0]
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Count lines, words, and characters from stdin or a file.")
+    parser = argparse.ArgumentParser(description="Count lines, words, and characters from stdin or files.")
     parser.add_argument('-l', '--lines', action='store_true', help='Count lines')
     parser.add_argument('-w', '--words', action='store_true', help='Count words')
     parser.add_argument('-c', '--characters', action='store_true', help='Count characters')
-    parser.add_argument('filename', nargs='?', help='Input file name')
+    parser.add_argument('filenames', nargs='*', help='Input file names')
 
     args = parser.parse_args()
 
-    data = load_data(args.filename)
-    count_lwc(data, args.lines, args.words, args.characters)
+    if not args.filenames:
+        data = load_data()
+        line_count, word_count, char_count = count_lwc(data)
+        results = []
+        if args.lines:
+            results.append(str(line_count))
+        if args.words:
+            results.append(str(word_count))
+        if args.characters:
+            results.append(str(char_count))
+        print(" ".join(results))
+    else:
+        for filename in args.filenames:
+            data = load_data(filename)
+            line_count, word_count, char_count = count_lwc(data)
+            results = []
+            if args.lines:
+                results.append(str(line_count))
+            if args.words:
+                results.append(str(word_count))
+            if args.characters:
+                results.append(str(char_count))
+            results.append(filename)
+            print(" ".join(results))
